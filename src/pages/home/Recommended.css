@@ -1,0 +1,169 @@
+/* --- Section Recommended mới --- */
+.recommended-section {
+  background-color: #eef2f7;
+  border-radius: 18px;
+  padding: 25px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* --- Title Section --- */
+.title-section {
+  font-size: 2rem;
+  color: #1a1a1a;
+  font-weight: 700;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- Category Filter --- */
+.category-filter .btn-category {
+  border: 1px solid #ff6f61;
+  color: #ff6f61;
+  background: #fff;
+  margin: 6px;
+  border-radius: 25px;
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: all 0.35s ease;
+}
+
+.category-filter .btn-category:hover,
+.category-filter .btn-category.active {
+  background: #ff6f61;
+  color: #fff;
+  transform: scale(1.1) rotate(-1deg);
+  box-shadow: 0 4px 12px rgba(255, 111, 97, 0.35);
+}
+
+/* --- Product Grid --- */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 28px;
+}
+
+/* --- Product Card --- */
+.product-card {
+  background: #fff8f5;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.35s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-8px) rotateX(2deg);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Image Wrapper (ĐÃ CHỈNH TO HƠN) --- */
+.img-wrap {
+  position: relative;
+  width: 100%;
+  height: 380px;              /* ⭐ tăng từ 300px -> 380px (to hơn, đầy đặn) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff7f3;
+  overflow: hidden;
+  border-bottom: 1px solid #eee;
+}
+
+/* --- Product Image (ĐÃ FIX to + fit hơn) --- */
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;          /* ⭐ đổi từ contain → cover: ảnh tràn đẹp, không dư khoảng trắng */
+  transition: transform 0.35s ease, filter 0.35s ease;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.08) rotate(1deg);
+  filter: brightness(1.05);
+}
+
+/* --- Overlay (nút xem / yêu thích) --- */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  background: rgba(0, 0, 0, 0.45);
+  transition: opacity 0.35s ease;
+}
+
+.product-card:hover .overlay {
+  opacity: 1;
+}
+
+.overlay .btn {
+  border-radius: 25px;
+  font-size: 0.95rem;
+  padding: 8px 18px;
+  font-weight: 600;
+  background: #ff6f61;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(255, 111, 97, 0.4);
+  transition: all 0.3s ease;
+}
+
+.overlay .btn:hover {
+  transform: scale(1.1) rotate(-2deg);
+}
+
+/* --- Product Info --- */
+.product-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #222;
+  margin: 10px 0 6px;
+}
+
+.price {
+  color: #ff3d00;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* --- Container animation --- */
+.container {
+  animation: fadeInNew 0.5s ease-in-out;
+}
+
+/* --- Button hover chung --- */
+.btn:hover {
+  transform: scale(1.05);
+  transition: all 0.25s ease;
+}
+
+/* --- Keyframes --- */
+@keyframes fadeInNew {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) rotateX(-3deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+  }
+}
+/* --- Image Wrapper (Tỷ lệ 3:4 chuẩn bìa truyện) --- */
+.img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;   /* ⭐ Tự động co giãn theo card — không bao giờ bị dư trắng */
+  background: #fff7f3;
+  overflow: hidden;
+  border-bottom: 1px solid #eee;
+}
+
+/* --- Product Image (Fit đầy khung) --- */
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;     /* ⭐ Luôn phủ kín — không dư khoảng trống */
+  transition: transform 0.35s ease, filter 0.35s ease;
+}

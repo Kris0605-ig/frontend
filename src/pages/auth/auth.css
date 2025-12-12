@@ -1,0 +1,51 @@
+/* --- Hiệu ứng fade-in mới khi vào trang --- */
+@keyframes fadeInSmooth {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) rotateX(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+  }
+}
+
+.bg-white {
+  animation: fadeInSmooth 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  background-color: #f9f9f9; /* Màu nền nhẹ nhàng khác trắng tinh */
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Hiệu ứng hover nút mới --- */
+.btn-primary:hover {
+  background-color: #ff5722;
+  color: #fff;
+  transform: scale(1.08) rotate(-1deg);
+  box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
+  transition: all 0.3s ease-in-out;
+}
+
+/* --- Viền input khi focus mới --- */
+.form-control:focus {
+  border-color: #ff9800;
+  box-shadow: 0 0 8px 2px rgba(255, 152, 0, 0.3);
+  outline: none;
+}
+
+/* --- Nút register hover mới --- */
+.btn-success:hover {
+  background-color: #4caf50;
+  color: #fff;
+  transform: scale(1.05) rotate(1deg);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+  transition: all 0.25s ease-in-out;
+}
+
+/* --- Input focus register mới --- */
+.form-control.register:focus {
+  border-color: #009688;
+  box-shadow: 0 0 10px 2px rgba(0, 150, 136, 0.3);
+  outline: none;
+}
