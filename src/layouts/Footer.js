@@ -19,21 +19,21 @@ const Footer = () => (
 				<aside className="col-md col-6">
 					<h5 className="title">Information</h5>
 					<ul className="list-unstyled">
-						<li> <a href="#">About us</a></li>
-						<li> <a href="#">Career</a></li>
-						<li> <a href="#">Find a store</a></li>
-						<li> <a href="#">Rules and terms</a></li>
-						<li> <a href="#">Sitemap</a></li>
+						<li> <a href="/">About us</a></li>
+						<li> <a href="/">Career</a></li>
+						<li> <a href="/">Find a store</a></li>
+						<li> <a href="/">Rules and terms</a></li>
+						<li> <a href="/">Sitemap</a></li>
 					</ul>
 				</aside>
 				<aside className="col-md col-6">
 					<h5 className="title">My Account</h5>
 					<ul className="list-unstyled">
-						<li> <a href="#">Contact us</a></li>
-						<li> <a href="#">Money refund</a></li>
-						<li> <a href="#">Order status</a></li>
-						<li> <a href="#">Shipping info</a></li>
-						<li> <a href="#">Open dispute</a></li>
+						<li> <a href="/">Contact us</a></li>
+						<li> <a href="/">Money refund</a></li>
+						<li> <a href="/">Order status</a></li>
+						<li> <a href="/">Shipping info</a></li>
+						<li> <a href="/">Open dispute</a></li>
 					</ul>
 				</aside>
 				<aside className="col-md-4 col-12">
@@ -47,10 +47,10 @@ const Footer = () => (
 
 					<p className="text-white-50 mb-2">Follow us on social media</p>
 					<div>
-						<a href="#" className="btn btn-icon btn-outline-light"><i className="fab fa-facebook-f"></i></a>
-						<a href="#" className="btn btn-icon btn-outline-light"><i className="fab fa-twitter"></i></a>
-						<a href="#" className="btn btn-icon btn-outline-light"><i className="fab fa-instagram"></i></a>
-						<a href="#" className="btn btn-icon btn-outline-light"><i className="fab fa-youtube"></i></a>
+						<a href="/" className="btn btn-icon btn-outline-light"><i className="fab fa-facebook-f"></i></a>
+						<a href="/" className="btn btn-icon btn-outline-light"><i className="fab fa-twitter"></i></a>
+						<a href="/" className="btn btn-icon btn-outline-light"><i className="fab fa-instagram"></i></a>
+						<a href="/" className="btn btn-icon btn-outline-light"><i className="fab fa-youtube"></i></a>
 					</div>
 
 				</aside>
