@@ -1,151 +1,69 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import authService from "../../services/authService";
-import "./auth.css";
+import axios from "axios";
 
 const Register = () => {
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    mobileNumber: "",
-    email: "",
-    password: "",
-  });
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        fullName: "", firstName: "", lastName: "",
+        mobileNumber: "", email: "", password: "",
+        address: { street: "", city: "", state: "", pincode: "", buildingName: "", country: "" },
+    });
 
-  const navigate = useNavigate();
-
-  // Handle input change
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  // Generate random email to avoid duplicate
-  const generateRandomEmail = () => {
-    return `user${Date.now()}@example.com`;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const userData = {
-      firstName: form.firstName,
-      lastName: form.lastName,
-      mobileNumber: form.mobileNumber,
-      email: form.email.trim() || generateRandomEmail(),
-      password: form.password,
-      address: {
-        street: "string",
-        city: "string",
-        state: "string",
-        pincode: "string",
-        buildingName: "string 1",
-        country: "string",
-      },
-      cart: null,
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        if (name === "fullName") {
+            const parts = value.trim().split(/\s+/);
+            const first = parts[0] || "";
+            const last = parts.length > 1 ? parts.slice(1).join(" ") : " ";
+            setFormData({ ...formData, fullName: value, firstName: first, lastName: last });
+        } else if (name in formData.address) {
+            setFormData({ ...formData, address: { ...formData.address, [name]: value } });
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
 
-    console.log("Sending:", JSON.stringify(userData, null, 2));
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const { fullName, ...dataToSend } = formData;
+        try {
+            await axios.post("http://localhost:8080/api/register", dataToSend);
+            alert("Đăng ký thành công! Hãy đăng nhập.");
+            navigate("/login");
+        } catch (err) {
+            const errorMsg = err.response?.data?.errors 
+                ? Object.values(err.response.data.errors).join("\n") 
+                : "Đăng ký thất bại";
+            alert(errorMsg);
+        }
+    };
 
-    try {
-      await authService.register(userData);
-      alert("Đăng ký thành công!");
-      navigate("/login");
-    } catch (err) {
-      alert(err.message);
-    }
-  };
-
-  return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-      <div
-        className="bg-white shadow-lg rounded-4 p-4 p-md-5"
-        style={{ width: "100%", maxWidth: "480px" }}
-      >
-        <h3 className="text-center mb-4 fw-bold text-success">
-          ✨ Tạo tài khoản mới
-        </h3>
-
-        <form onSubmit={handleSubmit}>
-          <div className="row">
-            <div className="col-md-6 mb-3">
-              <label className="form-label fw-semibold">Họ</label>
-              <input
-                name="firstName"
-                placeholder="Nhập họ"
-                className="form-control form-control-lg"
-                onChange={handleChange}
-                required
-              />
+    return (
+        <div className="container d-flex justify-content-center py-5">
+            <div className="card shadow p-4" style={{ maxWidth: "550px", width: "100%" }}>
+                <h3 className="text-center text-primary fw-bold mb-4">Đăng ký</h3>
+                <form onSubmit={handleSubmit}>
+                    <input type="text" name="fullName" placeholder="Họ và Tên" className="form-control mb-3" onChange={handleChange} required />
+                    <div className="row">
+                        <div className="col-md-6"><input type="email" name="email" placeholder="Email" className="form-control mb-3" onChange={handleChange} required /></div>
+                        <div className="col-md-6"><input type="text" name="mobileNumber" placeholder="Số điện thoại" className="form-control mb-3" onChange={handleChange} required /></div>
+                    </div>
+                    <input type="password" name="password" placeholder="Mật khẩu (>= 6 ký tự)" className="form-control mb-3" onChange={handleChange} required />
+                    <hr />
+                    <h6 className="text-secondary mb-3">Thông tin địa chỉ</h6>
+                    <div className="row g-2">
+                        <div className="col-6"><input type="text" name="buildingName" placeholder="Số nhà/Tòa nhà" className="form-control" onChange={handleChange} required /></div>
+                        <div className="col-6"><input type="text" name="street" placeholder="Tên đường" className="form-control" onChange={handleChange} required /></div>
+                        <div className="col-6"><input type="text" name="city" placeholder="Quận/Huyện" className="form-control" onChange={handleChange} required /></div>
+                        <div className="col-6"><input type="text" name="state" placeholder="Tỉnh/Thành phố" className="form-control" onChange={handleChange} required /></div>
+                        <div className="col-6"><input type="text" name="pincode" placeholder="Mã Zip (6 số)" className="form-control" onChange={handleChange} required /></div>
+                        <div className="col-6"><input type="text" name="country" placeholder="Quốc gia" className="form-control" onChange={handleChange} required /></div>
+                    </div>
+                    <button className="btn btn-primary w-100 mt-4 py-2 fw-bold">Đăng ký ngay</button>
+                </form>
             </div>
-
-            <div className="col-md-6 mb-3">
-              <label className="form-label fw-semibold">Tên</label>
-              <input
-                name="lastName"
-                placeholder="Nhập tên"
-                className="form-control form-control-lg"
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label fw-semibold">Số điện thoại</label>
-            <input
-              name="mobileNumber"
-              placeholder="Nhập số điện thoại"
-              className="form-control form-control-lg"
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label fw-semibold">Email</label>
-            <input
-              name="email"
-              type="email"
-              placeholder="Email (để trống sẽ tự tạo)"
-              className="form-control form-control-lg"
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="form-label fw-semibold">Mật khẩu</label>
-            <input
-              name="password"
-              type="password"
-              placeholder="Nhập mật khẩu"
-              className="form-control form-control-lg"
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="btn btn-success btn-lg w-100 fw-semibold shadow-sm"
-          >
-            Đăng ký
-          </button>
-
-          <div className="text-center mt-3">
-            <p className="text-muted small">
-              Đã có tài khoản?{" "}
-              <a
-                href="/login"
-                className="text-decoration-none text-success fw-semibold"
-              >
-                Đăng nhập ngay
-              </a>
-            </p>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+        </div>
+    );
 };
-
 export default Register;

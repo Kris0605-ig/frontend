@@ -1,51 +1,94 @@
-/* --- Hiệu ứng fade-in mới khi vào trang --- */
-@keyframes fadeInSmooth {
-  0% {
-    opacity: 0;
-    transform: translateY(-20px) rotateX(-5deg);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) rotateX(0deg);
-  }
-}
-
-.bg-white {
-  animation: fadeInSmooth 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-  background-color: #f9f9f9; /* Màu nền nhẹ nhàng khác trắng tinh */
-  border-radius: 12px;
+/* --- Container --- */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(120deg, #fdfbfb, #ebedee);
   padding: 20px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* --- Hiệu ứng hover nút mới --- */
-.btn-primary:hover {
-  background-color: #ff5722;
-  color: #fff;
-  transform: scale(1.08) rotate(-1deg);
-  box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
+/* --- Card --- */
+.auth-card {
+  width: 100%;
+  max-width: 450px;
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  animation: fadeInSmooth 0.6s ease-in-out;
+}
+
+/* --- Title --- */
+.auth-title {
+  text-align: center;
+  color: #ff5722;
+  margin-bottom: 25px;
+  font-weight: 700;
+}
+
+/* --- Input --- */
+.form-control {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
   transition: all 0.3s ease-in-out;
 }
 
-/* --- Viền input khi focus mới --- */
 .form-control:focus {
   border-color: #ff9800;
   box-shadow: 0 0 8px 2px rgba(255, 152, 0, 0.3);
   outline: none;
 }
 
-/* --- Nút register hover mới --- */
-.btn-success:hover {
-  background-color: #4caf50;
+/* --- Button --- */
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: #ff5722;
   color: #fff;
-  transform: scale(1.05) rotate(1deg);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-  transition: all 0.25s ease-in-out;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
 }
 
-/* --- Input focus register mới --- */
-.form-control.register:focus {
-  border-color: #009688;
-  box-shadow: 0 0 10px 2px rgba(0, 150, 136, 0.3);
-  outline: none;
+.btn-primary:hover {
+  background-color: #ff784e;
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(255, 87, 34, 0.4);
+}
+
+/* --- Address title --- */
+.address-title {
+  margin-top: 15px;
+  margin-bottom: 10px;
+  color: #555;
+  font-weight: 600;
+}
+
+/* --- Link --- */
+.text-link {
+  color: #ff5722;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
+/* --- Fade In --- */
+@keyframes fadeInSmooth {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

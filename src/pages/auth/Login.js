@@ -1,84 +1,41 @@
 import React, { useState } from "react";
-import { useAuth } from "../../contexts/AuthContext";
-import { useNavigate, Link } from "react-router-dom"; // ✅ Đã thêm Link vào đây
-import "./auth.css";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Login = () => {
-  const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+    const [credentials, setCredentials] = useState({ email: "", password: "" });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    await login(email, password);
-    navigate("/"); // ✅ quay về trang chủ
-  };
+    const handleChange = (e) => {
+        setCredentials({ ...credentials, [e.target.name]: e.target.value });
+    };
 
-  return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-      <div
-        className="bg-white shadow-lg rounded-4 p-4 p-md-5"
-        style={{ width: "100%", maxWidth: "420px" }}
-      >
-        <h3 className="text-center mb-4 fw-bold text-primary">
-          🔐 Đăng nhập tài khoản
-        </h3>
-        <form onSubmit={handleSubmit}>
-          {/* Email */}
-          <div className="mb-3">
-            <label className="form-label fw-semibold">Email</label>
-            <input
-              type="email"
-              className="form-control form-control-lg"
-              placeholder="Nhập email của bạn"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post("http://localhost:8080/api/login", credentials);
+            
+            // Lưu JWT và Thông tin User
+            localStorage.setItem("token", response.data["jwt-token"]);
+            localStorage.setItem("user", JSON.stringify(response.data.user));
 
-          {/* Mật khẩu */}
-          <div className="mb-4">
-            <label className="form-label fw-semibold">Mật khẩu</label>
-            <input
-              type="password"
-              className="form-control form-control-lg"
-              placeholder="Nhập mật khẩu"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+            alert("Đăng nhập thành công!");
+            navigate("/"); // Về trang chủ
+            window.location.reload(); // Reload để Header cập nhật giao diện
+        } catch (err) {
+            alert("Sai email hoặc mật khẩu!");
+        }
+    };
 
-          {/* Nút đăng nhập */}
-          <button
-            type="submit"
-            className="btn btn-primary btn-lg w-100 fw-semibold shadow-sm"
-          >
-            Đăng nhập
-          </button>
-
-          {/* Liên kết phụ */}
-          <div className="text-center mt-3">
-            <Link // ✅ Thay <a> bằng <Link>
-              to="/forgot-password" // ✅ Đã thay href="#" bằng to="/forgot-password" (URL hợp lệ)
-              className="text-decoration-none text-secondary small me-2"
-            >
-              Quên mật khẩu?
-            </Link>
-            <span className="text-muted">•</span>
-            <Link // ✅ Thay <a> bằng <Link>
-              to="/register" // ✅ Đã thay href="/register" bằng to="/register"
-              className="text-decoration-none text-secondary small ms-2"
-            >
-              Đăng ký tài khoản
-            </Link>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+    return (
+        <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+            <form onSubmit={handleLogin} className="card p-4 shadow" style={{ width: "400px" }}>
+                <h3 className="text-center mb-4 fw-bold text-primary">Đăng nhập</h3>
+                <input type="email" name="email" placeholder="Email" className="form-control mb-3" onChange={handleChange} required />
+                <input type="password" name="password" placeholder="Mật khẩu" className="form-control mb-3" onChange={handleChange} required />
+                <button className="btn btn-primary w-100 py-2">Đăng nhập</button>
+            </form>
+        </div>
+    );
 };
-
 export default Login;

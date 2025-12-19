@@ -1,47 +1,31 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import authService from "../services/authService";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem("user"))
+  );
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) setUser(JSON.parse(savedUser));
-  }, []);
-
-  // ✅ Đăng nhập
   const login = async (email, password) => {
-    try {
-      const userData = await authService.login({ email, password });
-      setUser(userData);
-      alert("Đăng nhập thành công!");
-    } catch (err) {
-      alert(err.message);
-    }
+    const data = await authService.login(email, password); // ✅ POST
+
+    setUser(data.user);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem("token", data.token);
+
+    return data;
   };
 
-  // ✅ Đăng ký
-const register = async (userData) => {
-  try {
-    const newUser = await authService.register(userData);
-    setUser(newUser);
-    alert("Đăng ký thành công!");
-  } catch (err) {
-    alert(err.message);
-  }
-};
-
-  // ✅ Đăng xuất
   const logout = () => {
-    localStorage.removeItem("user");
     setUser(null);
-    alert("Đăng xuất thành công!");
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
