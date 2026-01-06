@@ -1,0 +1,268 @@
+/* =====================
+   🌟 HEADER TỔNG THỂ
+===================== */
+.header {
+  background-color: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  z-index: 100;
+  position: sticky;
+  top: 0;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-logo img {
+  height: 50px;
+  width: auto;
+  object-fit: contain; /* giữ tỉ lệ, không mất góc */
+}
+.header-logo span {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ff6600 !important;
+  letter-spacing: 1px;
+}
+
+/* =====================
+   🔍 THANH TÌM KIẾM
+===================== */
+.header-search {
+  flex: 1;
+  max-width: 500px;
+}
+.header-search .input-group {
+  border: 1px solid #eee;
+  border-radius: 50px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: 0.3s;
+}
+.header-search .form-control {
+  border: none !important;
+  padding: 10px 15px;
+  font-size: 0.95rem;
+}
+.header-search .btn {
+  border-radius: 0 50px 50px 0 !important;
+  background-color: #ff6600 !important;
+  color: #fff !important;
+  transition: all 0.3s;
+}
+.header-search .btn:hover {
+  background-color: #e65500 !important;
+}
+.header-search:focus-within .input-group {
+  border-color: #ff6600;
+  box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.15);
+}
+
+/* =====================
+   📋 KẾT QUẢ TÌM KIẾM DROPDOWN
+===================== */
+.search-results {
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  z-index: 1000;
+  background: #fff;
+}
+.search-results li {
+  padding: 8px 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.search-results li:hover {
+  background-color: #f0f0f0;
+}
+
+/* =====================
+   🛒 GIỎ HÀNG
+===================== */
+.cart-btn {
+  font-size: 1.2rem;
+  padding: 8px 12px;
+  border-radius: 50px;
+  position: relative;
+  transition: all 0.3s;
+}
+.cart-btn:hover {
+  background-color: #ff6600;
+  color: #fff !important;
+  border-color: #ff6600;
+}
+.cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 0.75rem;
+  padding: 3px 6px;
+  background: #ff6600;
+  color: #fff;
+  border-radius: 50%;
+  font-weight: 600;
+}
+
+/* =====================
+   👤 USER DROPDOWN
+===================== */
+.user-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+.user-dropdown img {
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  object-fit: cover; /* giữ tỉ lệ, không mất góc */
+  border: 2px solid #eee;
+  transition: transform 0.3s;
+}
+.user-dropdown:hover img {
+  transform: scale(1.1);
+}
+.user-dropdown:hover {
+  background-color: #f8f9fa;
+  border-radius: 50px;
+  transition: 0.2s;
+}
+
+/* =====================
+   📑 MENU CHÍNH
+===================== */
+.header-menu {
+  border-top: 1px solid #f1f1f1;
+  margin-top: 10px;
+}
+.header-menu ul {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.header-menu .nav-link {
+  color: #333 !important;
+  padding: 8px 0;
+  position: relative;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+}
+.header-menu .nav-link:hover,
+.header-menu .nav-link.active {
+  color: #ff6600 !important;
+}
+.header-menu .nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 2px;
+  background-color: #ff6600;
+  transition: width 0.3s;
+}
+.header-menu .nav-link:hover::after,
+.header-menu .nav-link.active::after {
+  width: 100%;
+}
+
+/* =====================
+   📦 SẢN PHẨM / TRUYỆN
+===================== */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+.product-card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+.product-card .img-wrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.product-card .img-wrap:hover img {
+  transform: scale(1.05);
+}
+.product-card .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.product-card .img-wrap:hover .overlay {
+  opacity: 1;
+}
+.product-card .overlay .btn {
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 30px;
+}
+
+/* =====================
+   🖥️ RESPONSIVE
+===================== */
+@media (max-width: 992px) {
+  .header-logo span {
+    font-size: 1.5rem;
+  }
+  .header-search {
+    max-width: 100%;
+    margin-top: 10px;
+  }
+}
+@media (max-width: 768px) {
+  .header-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .header-menu ul {
+    justify-content: center;
+  }
+  .product-card .img-wrap img {
+    height: 180px;
+  }
+}
+@media (max-width: 576px) {
+  .product-card .img-wrap img {
+    height: 150px;
+  }
+}
