@@ -114,7 +114,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
             "http://localhost:3000",
             "http://localhost:5173",
-            "https://clever-khapse-adc2b4.netlify.app"
+            "https://clever-khapse-adc2b4.netlify.app",
+            "https://truyen-gge0ngc91-kris0605-igs-projects.vercel.app"
         ));
 
         config.setAllowedMethods(List.of(
