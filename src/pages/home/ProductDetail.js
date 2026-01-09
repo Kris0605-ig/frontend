@@ -10,14 +10,11 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const { addToCart } = useCart();
 
-  // URL gốc của backend (bỏ chữ /api ở cuối nếu có)
-  const IMAGE_BASE_URL = "https://truyen-7lnw.onrender.com/images";
-
+  // ĐÃ SỬA: Xóa link Render vì ảnh nằm ở Frontend Netlify
   useEffect(() => {
     productService
       .getProductById(id)
       .then((res) => {
-        // Nếu res trả về trực tiếp Object sản phẩm
         setProduct(res);
       })
       .catch((err) => {
@@ -47,11 +44,13 @@ const ProductDetail = () => {
       <div className="row bg-white p-4 rounded-4 shadow-lg">
         {/* Ảnh sản phẩm */}
         <div className="col-md-5 d-flex justify-content-center align-items-center mb-4 mb-md-0">
+          {/* ĐÃ SỬA: Gọi trực tiếp product.image */}
           <img
-            src={product.image ? `${IMAGE_BASE_URL}/${product.image}` : "https://via.placeholder.com/400"}
+            src={product.image ? product.image : "https://via.placeholder.com/400"}
             alt={product.productName}
             className="img-fluid rounded-4 border shadow-sm"
             style={{ maxHeight: "400px", objectFit: "contain", width: "100%" }}
+            onError={(e) => { e.target.src = "https://via.placeholder.com/400"; }}
           />
         </div>
 
@@ -112,7 +111,7 @@ const ProductDetail = () => {
               className="btn btn-outline-dark px-4 py-2 fw-semibold"
               onClick={() => navigate("/")}
             >
-              Tiếp tục mua sắm
+               Tiếp tục mua sắm
             </button>
           </div>
         </div>
