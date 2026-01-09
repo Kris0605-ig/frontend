@@ -1,13 +1,12 @@
-FROM node:18-slim
+# Bước 1: Build bằng Maven
+FROM maven:3.8.4-openjdk-17 AS build
 WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Sửa đường dẫn COPY để trỏ vào thư mục chứa package.json của bạn
-# Giả sử thư mục đó tên là 'backend'
-COPY backend/package*.json ./
-RUN npm install
-
-# Copy toàn bộ nội dung của thư mục backend vào /app
-COPY backend/ . 
-
+# Bước 2: Chạy ứng dụng bằng OpenJDK chính thức từ Amazon (rất ổn định)
+FROM amazoncorretto:17-alpine-jdk
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-CMD ["node", "server-local.js"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
