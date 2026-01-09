@@ -11,7 +11,7 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
 
   // URL gốc của backend (bỏ chữ /api ở cuối nếu có)
-  const IMAGE_BASE_URL = "http://localhost:8080/images";
+  const IMAGE_BASE_URL = "https://truyen-7lnw.onrender.com/images";
 
   useEffect(() => {
     productService

@@ -24,7 +24,7 @@ const Header = () => {
 
       try {
         const res = await fetch(
-          `http://localhost:8080/api/public/products/keyword/${encodeURIComponent(query)}`
+          `https://truyen-7lnw.onrender.com/api/public/products/keyword/${encodeURIComponent(query)}`
         );
 
         if (!res.ok) {
@@ -103,7 +103,7 @@ const Header = () => {
                     style={{ cursor: "pointer" }}
                   >
                     <img
-                      src={item.image ? `http://localhost:8080/images/${item.image}` : "https://via.placeholder.com/40"}
+                      src={item.image ? `https://truyen-7lnw.onrender.com/images/${item.image}` : "https://via.placeholder.com/40"}
                       alt={item.productName}
                       width="40" height="40" className="me-3 rounded shadow-sm"
                     />

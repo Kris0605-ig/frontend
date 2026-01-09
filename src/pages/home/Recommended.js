@@ -16,7 +16,7 @@ const Recommended = () => {
   const pageSize = 8; // Mỗi trang hiện 8 truyện cho đẹp lưới (4 cột x 2 hàng)
 
   const { cart, addToCart, removeFromCart } = useCart();
-  const IMAGE_BASE_URL = "http://localhost:8080/images";
+  const IMAGE_BASE_URL = "https://truyen-7lnw.onrender.com/images";
 
   const isFavorite = (productId) => cart.some((item) => item.productId === productId);
 

@@ -28,7 +28,7 @@ const Register = () => {
         e.preventDefault();
         const { fullName, ...dataToSend } = formData;
         try {
-            await axios.post("http://localhost:8080/api/register", dataToSend);
+            await axios.post("https://truyen-7lnw.onrender.com/api/register", dataToSend);
             alert("Đăng ký thành công! Hãy đăng nhập.");
             navigate("/login");
         } catch (err) {
