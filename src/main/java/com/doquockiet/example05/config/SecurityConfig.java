@@ -113,7 +113,8 @@ public class SecurityConfig {
         // Frontend origins
         config.setAllowedOrigins(List.of(
             "http://localhost:3000",
-            "http://localhost:5173"
+            "http://localhost:5173",
+            "https://clever-khapse-adc2b4.netlify.app"
         ));
 
         config.setAllowedMethods(List.of(
