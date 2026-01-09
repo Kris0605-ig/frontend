@@ -10,23 +10,20 @@ const Recommended = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   
-  // Các state để phân trang
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const pageSize = 8; // Mỗi trang hiện 8 truyện cho đẹp lưới (4 cột x 2 hàng)
+  const pageSize = 8; 
 
   const { cart, addToCart, removeFromCart } = useCart();
-  const IMAGE_BASE_URL = "https://truyen-7lnw.onrender.com/images";
 
+  // ĐÃ SỬA: Không cần URL của Render cho ảnh nữa
   const isFavorite = (productId) => cart.some((item) => item.productId === productId);
 
   const toggleFavorite = (product) => {
     isFavorite(product.productId) ? removeFromCart(product.productId) : addToCart(product);
   };
 
-  // Lấy sản phẩm (có kèm phân trang và sắp xếp mới nhất lên đầu)
   useEffect(() => {
-    // Truyền vào: trang hiện tại, số lượng, trường sắp xếp, hướng sắp xếp
     productService
       .getAllProducts(currentPage, pageSize, "productId", "desc")
       .then((res) => {
@@ -34,9 +31,8 @@ const Recommended = () => {
         setTotalPages(res.totalPages || 0);
       })
       .catch((err) => console.error("Lỗi lấy sản phẩm:", err));
-  }, [currentPage]); // Chạy lại mỗi khi đổi trang
+  }, [currentPage]);
 
-  // Lấy danh mục
   useEffect(() => {
     productService
       .getCategories()
@@ -51,11 +47,10 @@ const Recommended = () => {
     ? products
     : products.filter((p) => (p.category?.categoryId || p.categoryId) === selectedCategory);
 
-  // Hàm chuyển trang
   const handlePageChange = (newPage) => {
     if (newPage >= 0 && newPage < totalPages) {
       setCurrentPage(newPage);
-      window.scrollTo({ top: 0, behavior: 'smooth' }); // Cuộn lên đầu khi đổi trang
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -66,7 +61,6 @@ const Recommended = () => {
         <p className="text-muted">Khám phá thế giới truyện tranh đầy hấp dẫn</p>
       </div>
 
-      {/* Lọc danh mục */}
       <div className="category-filter text-center mb-4">
         <button
           className={`btn btn-category ${selectedCategory === "All" ? "active" : ""}`}
@@ -85,20 +79,21 @@ const Recommended = () => {
         ))}
       </div>
 
-      {/* Lưới sản phẩm */}
       <div className="product-grid">
         {filteredProducts.length === 0 ? (
           <div className="text-center w-100 py-5">
-             <p className="text-muted">Không có sản phẩm nào ở trang này.</p>
+              <p className="text-muted">Không có sản phẩm nào ở trang này.</p>
           </div>
         ) : (
           filteredProducts.map((p) => (
             <div key={p.productId} className="product-card shadow-sm">
               <div className="img-wrap">
+                {/* ĐÃ SỬA: Gọi trực tiếp p.image */}
                 <img
-                  src={p.image ? `${IMAGE_BASE_URL}/${p.image}` : "https://via.placeholder.com/150"}
+                  src={p.image ? p.image : "https://via.placeholder.com/150"}
                   alt={p.productName}
                   className="product-image"
+                  onError={(e) => { e.target.src = "https://via.placeholder.com/150"; }}
                 />
                 <div className="overlay">
                   <Link to={`/product/${p.productId}`} className="btn btn-light me-2">
@@ -121,7 +116,6 @@ const Recommended = () => {
         )}
       </div>
 
-      {/* Bộ nút chuyển trang (Pagination Controls) */}
       {totalPages > 1 && (
         <div className="pagination-container d-flex justify-content-center align-items-center mt-5 gap-2">
           <button 
