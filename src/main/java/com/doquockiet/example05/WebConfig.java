@@ -9,8 +9,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // Cho phép tất cả các đường dẫn API
-                .allowedOrigins("https://clever-khapse-adc2b4.netlify.app") // Chỉ định đích danh link Netlify của bạn
+        registry.addMapping("/**")
+                .allowedOriginPatterns("*") // Sử dụng pattern để cho phép rộng hơn
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
