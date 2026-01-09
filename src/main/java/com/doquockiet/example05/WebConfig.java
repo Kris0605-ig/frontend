@@ -6,15 +6,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOriginPatterns("*") // Cho phép tất cả các nguồn phát yêu cầu
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true)
-                .maxAge(3600); // Lưu cấu hình này trong 1 giờ để giảm tải
-                
-    }
+@Override
+public void addCorsMappings(CorsRegistry registry) {
+    registry.addMapping("/**")
+            .allowedOrigins(
+                "https://doquockiet-comic.netlify.app", // Tên miền mới của bạn
+                "http://localhost:5173"               // Cho phép chạy ở máy local
+            )
+            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            .allowedHeaders("*")
+            .allowCredentials(true)
+            .maxAge(3600);
+}
 }
