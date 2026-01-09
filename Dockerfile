@@ -5,10 +5,10 @@ COPY . .
 # Cấp quyền cho wrapper và build file jar
 RUN chmod +x mvnw && ./mvnw clean package -DskipTests
 
-# Bước 2: Chạy ứng dụng với Java 17
-FROM openjdk:17-jdk-slim
+# Bước 2: Chạy ứng dụng (Sử dụng Eclipse Temurin thay cho OpenJDK cũ)
+FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
-# Copy file jar từ bước build sang (tên file jar khớp với pom.xml của bạn)
+# Copy file jar từ bước build sang
 COPY --from=build /app/target/example05-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
