@@ -36,6 +36,8 @@ import Register from "../pages/auth/Register";
 import ProfilePage from "../pages/user/ProfilePage";
 import CheckoutPage from "../pages/checkout/CheckoutPage";
 import SearchPage from "../pages/home/SearchPage"; // ✅ Import SearchPage
+import ReadingPage from "../pages/home/ReadingPage";
+import CategoryPage from "../pages/Category/CategoryPage"; // Import CategoryPages
 
 const Main = () => (
   <main>
@@ -49,6 +51,12 @@ const Main = () => (
       <Route path="/checkout" element={<CheckoutPage />} />
       <Route path="/category/:categoryId" element={<CategoriesPage />} />  {/* Danh sách thể loại */}
       <Route path="/search" element={<SearchPage />} />  {/* ✅ route search */}
+<Route path="/reading/:slug/:chapterId" element={<ReadingPage />} />
+<Route path="/" element={<Home />} />
+        {/* Định nghĩa đường dẫn đọc truyện tại đây để tránh lỗi "No routes matched" */}
+        <Route path="/reading/:chapterId" element={<ReadingPage />} />
+        <Route path="/product/:slug" element={<ProductDetail />} />
+        <Route path="/category/:categoryId" element={<CategoryPage />} />
     </Routes>
   </main>
 );

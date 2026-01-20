@@ -1,115 +1,33 @@
-/* ---------- Grid và layout ---------- */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
+/* Container chứa các card truyện */
 .row.g-4 {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.5rem;
+    display: grid !important; /* Ép buộc sử dụng Grid */
+    /* Tự động tính toán số cột: tối thiểu mỗi card rộng 180px */
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important; 
+    gap: 20px !important;
+    width: 100%;
 }
 
-/* ---------- Card sản phẩm ---------- */
+/* Sửa lại card sản phẩm để không bị biến dạng */
 .product-card {
-  background: #fff;
-  border-radius: 15px;
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  position: relative;
-  cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    width: 100% !important; /* Đảm bảo card chiếm hết chiều ngang của cột grid */
+    height: 100%;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    overflow: hidden;
 }
 
-.product-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-}
-
-/* ---------- Hình ảnh ---------- */
+/* Ép ảnh về tỉ lệ chuẩn bìa truyện (3:4) */
 .img-wrap {
-  position: relative;
-  overflow: hidden;
-  border-radius: 15px 15px 0 0;
+    width: 100%;
+    aspect-ratio: 3 / 4; 
+    overflow: hidden;
 }
 
 .product-image {
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.product-card:hover .product-image {
-  transform: scale(1.1);
-}
-
-/* ---------- Overlay khi hover ---------- */
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  opacity: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  transition: opacity 0.3s ease;
-}
-
-.product-card:hover .overlay {
-  opacity: 1;
-}
-
-.overlay .btn {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-weight: 600;
-  padding: 0.5rem 1rem;
-  border-radius: 30px;
-  transition: transform 0.2s ease, background 0.3s ease;
-}
-
-.overlay .btn:hover {
-  transform: scale(1.05);
-}
-
-/* ---------- Info wrap ---------- */
-.info-wrap {
-  padding: 1rem;
-  transition: background 0.3s ease;
-}
-
-.product-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
-  transition: color 0.3s ease;
-}
-
-.product-card:hover .product-title {
-  color: #ff6600;
-}
-
-.price {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #ff6600;
-  margin-top: 0.5rem;
-}
-
-/* ---------- CategoryPage Header ---------- */
-h2 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #222;
-  margin-bottom: 2rem;
-}
-
-/* ---------- Responsive ---------- */
-@media (max-width: 768px) {
-  .product-image {
-    height: 180px;
-  }
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Không làm méo ảnh */
 }

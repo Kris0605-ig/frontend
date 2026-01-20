@@ -266,3 +266,8 @@
     height: 150px;
   }
 }
+.header .ms-4 {
+    margin-left: 50px !important; /* Đẩy menu ra xa logo */
+    display: flex;
+    gap: 30px !important; /* Tạo khoảng cách giữa Trang chủ và Danh mục */
+}
