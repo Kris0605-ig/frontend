@@ -87,11 +87,10 @@ const ProductDetail = () => {
           <div className="chapters-list mt-4" style={{ maxHeight: "400px", overflowY: "auto", border: "1px solid #eee", borderRadius: "10px", padding: "15px" }}>
             <h6 className="fw-bold mb-3">Danh sách chương:</h6>
             <div className="list-group list-group-flush">
-              // --- ĐOẠN CẦN SỬA TRONG DANH SÁCH CHƯƠNG ---
-{product.chapters.length > 0 ? (
-  product.chapters.map((chap, index) => {
-    // Tách lấy mã ID từ link API của OTruyen
-    const chapterId = chap.chapter_api_data.split('/').pop();
+              {product.chapters.length > 0 ? (
+                product.chapters.map((chap, index) => {
+                  // Tách lấy mã ID từ link API của OTruyen
+                  const chapterId = chap.chapter_api_data.split('/').pop();
 
     return (
       <Link 
