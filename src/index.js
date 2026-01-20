@@ -19,9 +19,14 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
-
+// Thêm đoạn này vào đầu file src/index.js
+const link = document.createElement('link');
+link.rel = 'icon';
+link.href = 'data:;base64,iVBORw0KGgo=';
+document.head.appendChild(link);
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <App />
   </BrowserRouter>
+  
 );
