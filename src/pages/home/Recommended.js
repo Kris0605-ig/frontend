@@ -3,26 +3,22 @@ import "./Recommended.css";
 import { Link } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
 import productService from "../../services/productService";
-import { FaEye, FaHeart, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaEye, FaHeart } from "react-icons/fa"; // ĐÃ XÓA: FaChevronLeft, FaChevronRight
 
 const Recommended = () => {
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [currentPage, setCurrentPage] = useState(0);
+  // ĐÃ XÓA: categories, selectedCategory, pageSize vì không sử dụng
+  const [currentPage] = useState(0); 
   const [totalPages, setTotalPages] = useState(0);
-  const pageSize = 8; 
 
   const { cart, addToCart, removeFromCart } = useCart();
 
-  // ĐÃ CẬP NHẬT: Hàm Adapter để biến dữ liệu OTruyen thành cấu trúc của bạn
   const formatExternalData = (items) => {
     return items.map(item => ({
-      productId: item.slug, // Dùng slug làm ID để Link sang trang chi tiết
+      productId: item.slug, 
       productName: item.name,
-      // Nối domain ảnh chính thức của OTruyen
       image: `https://otruyenapi.com/uploads/comics/${item.thumb_url}`,
-      price: 0, // API ngoài thường không trả về giá
+      price: 0,
       specialPrice: 0,
       category: { categoryName: "Truyện mới" }
     }));
@@ -35,24 +31,24 @@ const Recommended = () => {
   };
 
   useEffect(() => {
-    // ĐÃ SỬA: Gọi hàm lấy dữ liệu từ OTruyen thay vì database cá nhân
     productService
-      .getOTruyenList(currentPage + 1) // OTruyen thường bắt đầu từ trang 1
+      .getOTruyenList(currentPage + 1)
       .then((res) => {
         if (res && res.items) {
           const formatted = formatExternalData(res.items);
           setProducts(formatted);
-          // Tính toán tổng trang dựa trên dữ liệu API ngoại
           setTotalPages(Math.ceil(res.params.pagination.totalItems / res.params.pagination.totalItemsPerPage));
         }
       })
       .catch((err) => console.error("Lỗi lấy sản phẩm từ OTruyen:", err));
   }, [currentPage]);
 
-  // Giữ nguyên logic hiển thị...
   return (
     <section className="recommended-section container py-5">
-      {/* ... (Các phần tiêu đề và filter giữ nguyên) ... */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h3 className="fw-bold">Truyện Đề Cử</h3>
+        <Link to="/category/all" className="text-orange text-decoration-none">Xem tất cả</Link>
+      </div>
       
       <div className="product-grid">
         {products.map((p) => (
@@ -65,7 +61,6 @@ const Recommended = () => {
                 onError={(e) => { e.target.src = "https://via.placeholder.com/150"; }}
               />
               <div className="overlay">
-                {/* Dùng slug để dẫn tới trang chi tiết của OTruyen */}
                 <Link to={`/product/${p.productId}`} className="btn btn-light me-2">
                   <FaEye /> Xem
                 </Link>
@@ -81,8 +76,11 @@ const Recommended = () => {
           </div>
         ))}
       </div>
-      
-      {/* ... (Phần phân trang giữ nguyên) ... */}
+
+      {/* Hiển thị thông tin trang hiện tại */}
+      <div className="text-center mt-4">
+        <small className="text-muted">Trang {currentPage + 1} / {totalPages}</small>
+      </div>
     </section>
   );
 };
