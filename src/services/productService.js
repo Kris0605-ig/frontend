@@ -34,24 +34,47 @@ const productService = {
 
   // Hàm lấy nội dung chương - ĐÃ SỬA ĐỂ HẾT LỖI 404
   getChapterContent: async (chapterId) => {
-    try {
-      // Chỉ dùng 1 endpoint chuẩn duy nhất
-      const res = await otruyenClient.get(`/chuong/${chapterId}`);
-      if (res.data?.status === "success") {
-        return res.data.data.item;
-      }
-      throw new Error("Không tìm thấy chương");
-    } catch (err) {
-      console.warn("Thử dùng Proxy do lỗi kết nối hoặc 404...");
-      // Proxy dự phòng nếu bị chặn CORS hoặc lỗi mạng
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`${OTRUYEN_API}/chuong/${chapterId}`)}`;
-      const proxyRes = await axios.get(proxyUrl);
-      const data = JSON.parse(proxyRes.data.contents);
-      return data.data.item;
+  try {
+    // 1. Thử gọi trực tiếp bằng client đã cấu hình
+    const res = await otruyenClient.get(`/chuong/${chapterId}`);
+    
+    if (res.data && res.data.status === "success") {
+      return res.data.data.item;
     }
-  },
+    throw new Error("Dữ liệu không thành công");
+  } catch (err) {
+    console.warn("⚠️ Đang thử dùng Proxy dự phòng...");
+    
+    try {
+      const url = `${OTRUYEN_API}/chuong/${chapterId}`;
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+      
+      const proxyRes = await axios.get(proxyUrl);
+      
+      // Kiểm tra nếu proxyRes có dữ liệu nội dung
+      if (proxyRes.data && proxyRes.data.contents) {
+        const data = JSON.parse(proxyRes.data.contents);
+        
+        // KIỂM TRA AN TOÀN: Tránh lỗi "undefined reading item"
+        if (data && data.data && data.data.item) {
+          return data.data.item;
+        }
+      }
+      throw new Error("Proxy không trả về dữ liệu item");
+    } catch (proxyErr) {
+      console.error("❌ Cả API và Proxy đều thất bại:", proxyErr.message);
+      // Trả về dữ liệu giả lập để không gây crash app
+      return {
+        comic_name: "Lỗi tải dữ liệu",
+        chapter_name: "N/A",
+        chapter_image: [],
+        _fallback: true
+      };
+    }
+  }
+},
 
-  isFallbackData: (data) => data?._fallback === true
+isFallbackData: (data) => data?._fallback === true
 };
 
 export default productService;
