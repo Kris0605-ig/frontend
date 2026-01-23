@@ -12,40 +12,44 @@ const ProductDetail = () => {
   const [error, setError] = useState(null);
   const { addToCart } = useCart();
 
-  useEffect(() => {
-    const fetchProductDetail = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const res = await productService.getOTruyenDetail(id);
-        
-        if (!res) {
-          throw new Error("Không tìm thấy thông tin truyện");
-        }
-
-        setProduct({
-          productId: res.slug || id,
-          productName: res.name || "Không có tên",
-          image: `https://otruyenapi.com/uploads/comics/${res.thumb_url || 'default.jpg'}`,
-          description: res.content || "Đang cập nhật mô tả...",
-          category: { 
-            categoryName: res.category?.[0]?.name || "Truyện tranh" 
-          },
-          price: 0,
-          quantity: 100,
-          chapters: res.chapters?.[0]?.server_data || []
-        });
-      } catch (err) {
-        console.error("❌ Lỗi tải chi tiết:", err);
-        setError(err.message || "Không thể tải thông tin truyện");
-      } finally {
-        setLoading(false);
+  // Trong useEffect của ProductDetail
+useEffect(() => {
+  const fetchProductDetail = async () => {
+    try {
+      setLoading(true);
+      
+      const data = await productService.getOTruyenDetail(id);
+      
+      // Kiểm tra nếu là fallback data
+      if (productService.isFallbackData(data)) {
+        setError(data._error || 'Không thể tải chi tiết truyện');
       }
-    };
-
-    fetchProductDetail();
-  }, [id]);
+      
+      setProduct({
+        productId: data.slug || id,
+        productName: data.name || 'Đang tải...',
+        image: data.thumb_url 
+          ? `https://otruyenapi.com/uploads/comics/${data.thumb_url}`
+          : 'https://via.placeholder.com/300x450?text=Không+có+ảnh',
+        description: data.content || 'Chưa có mô tả',
+        category: { 
+          categoryName: data.category?.[0]?.name || 'Truyện tranh' 
+        },
+        price: 0,
+        quantity: 100,
+        chapters: data.chapters?.[0]?.server_data || []
+      });
+      
+    } catch (err) {
+      console.error('Lỗi fetch:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  fetchProductDetail();
+}, [id]);
 
   // Hàm trích xuất chapterId an toàn hơn
   const extractChapterId = (apiData) => {
