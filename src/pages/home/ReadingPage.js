@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import productService from "../services/productService";
+import productService from "../../services/productService";
 
 const ReadingPage = () => {
   const navigate = useNavigate();
