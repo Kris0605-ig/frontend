@@ -97,12 +97,17 @@ const getCategories = async (pageNumber = 0, pageSize = 1000) => {
 const otruyenClient = axios.create({
   baseURL: OTRUYEN_API,
   timeout: 10000,
-  // headers: {
-  //   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-  //   "Accept": "application/json"
-  // }
 });
-
+// Thêm interceptor để kiểm tra request
+otruyenClient.interceptors.request.use(
+  (config) => {
+    // Debug: xem headers đang gửi đi
+    console.log('📤 Sending request to:', config.url);
+    console.log('📤 Headers:', config.headers);
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 const getOTruyenList = async (page = 1) => {
   try {
     const res = await otruyenClient.get(`/home`, { params: { page } });
@@ -152,20 +157,117 @@ const searchOTruyen = async (keyword, page = 1) => {
 };
 
 // Hàm lấy nội dung chương
+// const getChapterContent = async (chapterId) => {
+//   try {
+//     const res = await otruyenClient.get(`/chuong/${chapterId}`);
+//     return res.data?.data || res.data;
+//   } catch (error) {
+//     console.error(`❌ Error getting chapter ${chapterId}:`, error);
+//     return {
+//       chapter_name: `Chương ${chapterId}`,
+//       chapter_content: "<p>Đang tải nội dung chương...</p>",
+//       _fallback: true
+//     };
+//   }
+// };
 const getChapterContent = async (chapterId) => {
-  try {
-    const res = await otruyenClient.get(`/chuong/${chapterId}`);
-    return res.data?.data || res.data;
-  } catch (error) {
-    console.error(`❌ Error getting chapter ${chapterId}:`, error);
-    return {
-      chapter_name: `Chương ${chapterId}`,
-      chapter_content: "<p>Đang tải nội dung chương...</p>",
-      _fallback: true
-    };
-  }
-};
+  console.log(`🔍 Đang tìm endpoint cho chương: ${chapterId}`);
+  
+  // THỬ CÁC ENDPOINT MỚI - API ĐÃ THAY ĐỔI
+  const endpoints = [
+    // Endpoint mới có thể là:
+    `/api/chuong/${chapterId}`,
+    `/api/chapter/${chapterId}`,
+    `/api/truyen-tranh/chuong/${chapterId}`,
+    `/chapter/${chapterId}`,
+    `/truyen-tranh/${chapterId}`,
+    
+    // Hoặc endpoint khác với định dạng ID khác
+    // Thử cắt ID nếu có dạng "id:slug"
+    chapterId.includes(':') ? `/api/chuong/${chapterId.split(':')[0]}` : null
+  ].filter(Boolean); // Lọc bỏ null
 
+  for (const endpoint of endpoints) {
+    try {
+      console.log(`🔄 Thử endpoint: ${endpoint}`);
+      const response = await otruyenClient.get(endpoint);
+      
+      if (response.data) {
+        console.log(`✅ Thành công với: ${endpoint}`);
+        return response.data.data || response.data;
+      }
+    } catch (error) {
+      // Chỉ log nếu không phải 404
+      if (error.response?.status !== 404) {
+        console.log(`❌ Lỗi với ${endpoint}:`, error.message);
+      }
+      continue;
+    }
+  }
+  
+  // NẾU KHÔNG TÌM THẤY ENDPOINT, THỬ CÁCH KHÁC:
+  console.log('🔄 Thử phương án dự phòng...');
+  
+  // Cách 2: Dùng API tìm kiếm chương
+  try {
+    // Thử lấy thông tin chương từ API tìm kiếm
+    const searchResponse = await otruyenClient.get(`/tim-kiem?keyword=${chapterId}`);
+    if (searchResponse.data?.data?.length > 0) {
+      console.log('✅ Tìm thấy chương qua search API');
+      return searchResponse.data.data[0];
+    }
+  } catch (searchError) {
+    console.log('❌ Search API cũng lỗi:', searchError.message);
+  }
+  
+  // Cách 3: Thử proxy khác (tránh CORS)
+  try {
+    console.log('🔄 Thử dùng proxy...');
+    const proxyResponse = await axios.get(
+      `https://api.allorigins.win/get?url=${encodeURIComponent(
+        `https://otruyenapi.com/v1/api/chuong/${chapterId}`
+      )}`
+    );
+    
+    if (proxyResponse.data?.contents) {
+      const data = JSON.parse(proxyResponse.data.contents);
+      console.log('✅ Thành công với proxy');
+      return data.data || data;
+    }
+  } catch (proxyError) {
+    console.log('❌ Proxy cũng lỗi:', proxyError.message);
+  }
+  
+  // FALLBACK: Trả về dữ liệu mẫu để không bị lỗi UI
+  console.warn('🔥 Tất cả endpoints đều thất bại, dùng fallback data');
+  return {
+    chapter_name: `Chương ${chapterId}`,
+    chapter_content: `
+      <div style="text-align: center; padding: 40px; font-family: Arial, sans-serif;">
+        <h3 style="color: #e74c3c;">⚠️ Không thể tải nội dung</h3>
+        <p>Chương truyện tạm thời không khả dụng. Nguyên nhân có thể:</p>
+        <ul style="text-align: left; display: inline-block; margin: 20px 0;">
+          <li>API đã thay đổi endpoint</li>
+          <li>Chương đã bị xóa hoặc di chuyển</li>
+          <li>Lỗi kết nối tạm thời</li>
+        </ul>
+        <p>Vui lòng thử lại sau hoặc đọc chương khác.</p>
+        <button onclick="window.history.back()" style="
+          background: #3498db;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 5px;
+          cursor: pointer;
+          margin-top: 20px;
+        ">← Quay lại</button>
+      </div>
+    `,
+    comic_name: "Truyện đang bảo trì",
+    _fallback: true,
+    _error: `Endpoint /chuong/${chapterId} không còn hoạt động`
+  };
+};
 const productService = {
   // Database cá nhân
   getAllProducts,
@@ -181,5 +283,6 @@ const productService = {
   // Utility
   isFallbackData: (data) => data?._fallback === true
 };
+
 
 export default productService;
