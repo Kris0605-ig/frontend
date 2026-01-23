@@ -4,7 +4,7 @@ const API_BASE_URL = "https://truyen-7lnw.onrender.com";
 
 const httpAxios = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000, // Thêm timeout
+  timeout: 15000,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -149,7 +149,7 @@ export const refreshToken = async () => {
 };
 
 // 👉 HÀM KIỂM TRA KẾT NỐI SERVER
-export const checkServerConnection = async () => {
+const checkServerConnection = async () => {
   try {
     const response = await httpAxios.get("/health", { timeout: 5000 });
     return {

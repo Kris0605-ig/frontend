@@ -1,4 +1,5 @@
-import httpAxios, { refreshToken, checkServerConnection } from "./httpAxios";
+// src/services/productService.js
+import httpAxios, { checkServerConnection } from "./httpAxios"; // Chỉ import những hàm cần dùng
 import axios from "axios";
 
 const BASE_URL = "/api/public";
@@ -6,12 +7,13 @@ const OTRUYEN_API = "https://otruyenapi.com/v1/api";
 
 // --- KIỂM TRA KẾT NỐI SERVER TRƯỚC KHI GỌI API ---
 const ensureServerConnection = async () => {
-  const connection = await checkServerConnection();
-  if (!connection.connected) {
-    console.warn("Server is not available, using fallback data");
+  try {
+    const connection = await checkServerConnection();
+    return connection.connected;
+  } catch (error) {
+    console.warn("⚠️ Server connection check failed:", error.message);
     return false;
   }
-  return true;
 };
 
 // --- DATABASE CÁ NHÂN (Render/Aiven) ---
@@ -19,7 +21,6 @@ const getAllProducts = async (pageNumber = 0, pageSize = 12) => {
   try {
     const isConnected = await ensureServerConnection();
     if (!isConnected) {
-      // Trả về fallback data nếu server không kết nối
       return {
         content: [],
         totalPages: 0,
@@ -33,7 +34,12 @@ const getAllProducts = async (pageNumber = 0, pageSize = 12) => {
     return res.data;
   } catch (error) {
     console.error("❌ Error getting products:", error);
-    throw error;
+    return {
+      content: [],
+      totalPages: 0,
+      _fallback: true,
+      _error: error.message
+    };
   }
 };
 
@@ -41,7 +47,6 @@ const getProductById = async (productId) => {
   try {
     const isConnected = await ensureServerConnection();
     if (!isConnected) {
-      // Trả về fallback data
       return {
         productId,
         productName: "Product unavailable (server offline)",
@@ -54,13 +59,17 @@ const getProductById = async (productId) => {
   } catch (error) {
     console.error(`❌ Error getting product ${productId}:`, error);
     
-    // Nếu lỗi 404, thử tìm trên OTruyen
     if (error.response?.status === 404) {
       console.log(`🔍 Product ${productId} not found, trying OTruyen...`);
       return await getOTruyenDetail(productId);
     }
     
-    throw error;
+    return {
+      productId,
+      productName: "Error loading product",
+      _fallback: true,
+      _error: error.message
+    };
   }
 };
 
@@ -73,7 +82,6 @@ const getCategories = async (pageNumber = 0, pageSize = 1000) => {
   } catch (error) {
     console.error("❌ Error getting categories:", error);
     
-    // Fallback categories
     return {
       content: [
         { categoryId: 1, categoryName: "Truyện tranh" },
@@ -86,12 +94,12 @@ const getCategories = async (pageNumber = 0, pageSize = 1000) => {
 };
 
 // --- OTruyen API (External) ---
-// Tạo instance riêng cho OTruyen để không bị ảnh hưởng bởi interceptor
 const otruyenClient = axios.create({
   baseURL: OTRUYEN_API,
   timeout: 10000,
   headers: {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "Accept": "application/json"
   }
 });
 
@@ -118,10 +126,13 @@ const getOTruyenDetail = async (slug) => {
   } catch (error) {
     console.error(`❌ Error getting OTruyen detail for ${slug}:`, error);
     
-    // Fallback data
     return {
       slug,
       name: `Truyện ${slug}`,
+      thumb_url: "",
+      content: "Đang tải nội dung...",
+      category: [{ name: "Truyện tranh" }],
+      chapters: [{ server_data: [] }],
       _fallback: true,
       _error: error.message
     };
@@ -140,6 +151,21 @@ const searchOTruyen = async (keyword, page = 1) => {
   }
 };
 
+// Hàm lấy nội dung chương
+const getChapterContent = async (chapterId) => {
+  try {
+    const res = await otruyenClient.get(`/chuong/${chapterId}`);
+    return res.data?.data || res.data;
+  } catch (error) {
+    console.error(`❌ Error getting chapter ${chapterId}:`, error);
+    return {
+      chapter_name: `Chương ${chapterId}`,
+      chapter_content: "<p>Đang tải nội dung chương...</p>",
+      _fallback: true
+    };
+  }
+};
+
 const productService = {
   // Database cá nhân
   getAllProducts,
@@ -150,6 +176,7 @@ const productService = {
   getOTruyenList,
   getOTruyenDetail,
   searchOTruyen,
+  getChapterContent,
   
   // Utility
   isFallbackData: (data) => data?._fallback === true

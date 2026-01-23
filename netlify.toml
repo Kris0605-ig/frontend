@@ -1,0 +1,10 @@
+# netlify.toml
+[build]
+  command = "npm run build"
+  publish = "build"
+
+[build.environment]
+  CI = "false"
+
+[context.production.environment]
+  NODE_ENV = "production"
