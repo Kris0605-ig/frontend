@@ -151,13 +151,24 @@ export const refreshToken = async () => {
 // 👉 HÀM KIỂM TRA KẾT NỐI SERVER
 const checkServerConnection = async () => {
   try {
-    const response = await httpAxios.get("/health", { timeout: 5000 });
+    // Sử dụng endpoint public để kiểm tra
+    const response = await httpAxios.get("/api/public/categories?pageSize=1", { 
+      timeout: 5000 
+    });
     return {
       connected: true,
       status: response.status,
       message: "Server is running"
     };
   } catch (error) {
+    // Nếu có response dù là lỗi -> server đang chạy
+    if (error.response) {
+      return {
+        connected: true,
+        status: error.response.status,
+        message: "Server responded with error"
+      };
+    }
     return {
       connected: false,
       error: error.message,
@@ -165,5 +176,8 @@ const checkServerConnection = async () => {
     };
   }
 };
+
+// 👉 THÊM DÒNG NÀY - EXPORT HÀM checkServerConnection
+export { checkServerConnection };  // <-- DÒNG QUAN TRỌNG CẦN THÊM
 
 export default httpAxios;
