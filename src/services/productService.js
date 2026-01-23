@@ -1,17 +1,21 @@
-// src/services/productService.js
-import httpAxios, { checkServerConnection } from "./httpAxios"; // Chỉ import những hàm cần dùng
+import httpAxios from "./httpAxios";
 import axios from "axios";
 
 const BASE_URL = "/api/public";
 const OTRUYEN_API = "https://otruyenapi.com/v1/api";
 
-// --- KIỂM TRA KẾT NỐI SERVER TRƯỚC KHI GỌI API ---
-const ensureServerConnection = async () => {
+// --- HÀM KIỂM TRA KẾT NỐI SERVER ---
+const checkServerConnection = async () => {
   try {
-    const connection = await checkServerConnection();
-    return connection.connected;
+    // Thử kết nối đến endpoint đơn giản
+    await httpAxios.get("/api/public/categories?pageSize=1", { timeout: 3000 });
+    return true;
   } catch (error) {
-    console.warn("⚠️ Server connection check failed:", error.message);
+    // Nếu server trả về lỗi (có response) -> vẫn kết nối được
+    if (error.response) {
+      return true;
+    }
+    console.warn("⚠️ Server không kết nối được:", error.message);
     return false;
   }
 };
@@ -19,7 +23,7 @@ const ensureServerConnection = async () => {
 // --- DATABASE CÁ NHÂN (Render/Aiven) ---
 const getAllProducts = async (pageNumber = 0, pageSize = 12) => {
   try {
-    const isConnected = await ensureServerConnection();
+    const isConnected = await checkServerConnection();
     if (!isConnected) {
       return {
         content: [],
@@ -45,7 +49,7 @@ const getAllProducts = async (pageNumber = 0, pageSize = 12) => {
 
 const getProductById = async (productId) => {
   try {
-    const isConnected = await ensureServerConnection();
+    const isConnected = await checkServerConnection();
     if (!isConnected) {
       return {
         productId,
@@ -94,37 +98,78 @@ const getCategories = async (pageNumber = 0, pageSize = 1000) => {
 };
 
 // --- OTruyen API (External) ---
+// Tạo client cho OTruyen API (KHÔNG DÙNG User-Agent header)
 const otruyenClient = axios.create({
   baseURL: OTRUYEN_API,
-  timeout: 10000,
+  timeout: 15000,
+  headers: {
+    "Accept": "application/json",
+    "Content-Type": "application/json"
+  }
 });
-// Thêm interceptor để kiểm tra request
-otruyenClient.interceptors.request.use(
-  (config) => {
-    // Debug: xem headers đang gửi đi
-    console.log('📤 Sending request to:', config.url);
-    console.log('📤 Headers:', config.headers);
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+
+// Hàm xử lý lỗi CORS và thử các endpoint khác nhau
+const callOTruyenAPI = async (endpoint) => {
+  try {
+    // Thử gọi trực tiếp
+    const response = await otruyenClient.get(endpoint);
+    return response.data;
+  } catch (error) {
+    // Nếu lỗi CORS, thử dùng proxy
+    if (error.code === 'ERR_NETWORK' || error.message.includes('CORS')) {
+      console.log("⚠️ CORS error, trying proxy...");
+      
+      try {
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(
+          `${OTRUYEN_API}${endpoint}`
+        )}`;
+        
+        const proxyResponse = await axios.get(proxyUrl, { timeout: 15000 });
+        
+        if (proxyResponse.data?.contents) {
+          try {
+            return JSON.parse(proxyResponse.data.contents);
+          } catch {
+            return proxyResponse.data.contents;
+          }
+        }
+      } catch (proxyError) {
+        console.error("❌ Proxy also failed:", proxyError.message);
+      }
+    }
+    
+    throw error;
+  }
+};
+
+// 1. Lấy danh sách truyện
 const getOTruyenList = async (page = 1) => {
   try {
-    const res = await otruyenClient.get(`/home`, { params: { page } });
-    return res.data?.data || res.data || [];
+    const data = await callOTruyenAPI(`/home?page=${page}`);
+    return data.data || data;
   } catch (error) {
     console.error("❌ Error getting OTruyen list:", error);
     return [];
   }
 };
 
+// 2. Lấy chi tiết truyện
 const getOTruyenDetail = async (slug) => {
   try {
-    const res = await otruyenClient.get(`/truyen-tranh/${slug}`);
-    const item = res.data?.data?.item || res.data?.item;
+    const data = await callOTruyenAPI(`/truyen-tranh/${slug}`);
+    const item = data.data?.item || data.item || data;
     
     if (!item) {
-      throw new Error("No data found");
+      throw new Error("No item data found");
+    }
+    
+    // DEBUG: Log cấu trúc chapter data
+    if (item.chapters?.[0]?.server_data?.[0]) {
+      const chapterData = item.chapters[0].server_data[0];
+      console.log('📊 Chapter API Data structure:', {
+        chapter_api_data: chapterData.chapter_api_data,
+        chapter_name: chapterData.chapter_name
+      });
     }
     
     return item;
@@ -144,130 +189,190 @@ const getOTruyenDetail = async (slug) => {
   }
 };
 
+// 3. Tìm kiếm truyện
 const searchOTruyen = async (keyword, page = 1) => {
   try {
-    const res = await otruyenClient.get(`/tim-kiem`, {
-      params: { keyword, page }
-    });
-    return res.data?.data || [];
+    const data = await callOTruyenAPI(`/tim-kiem?keyword=${keyword}&page=${page}`);
+    return data.data || [];
   } catch (error) {
     console.error("❌ Error searching OTruyen:", error);
     return [];
   }
 };
 
-// Hàm lấy nội dung chương
-// const getChapterContent = async (chapterId) => {
-//   try {
-//     const res = await otruyenClient.get(`/chuong/${chapterId}`);
-//     return res.data?.data || res.data;
-//   } catch (error) {
-//     console.error(`❌ Error getting chapter ${chapterId}:`, error);
-//     return {
-//       chapter_name: `Chương ${chapterId}`,
-//       chapter_content: "<p>Đang tải nội dung chương...</p>",
-//       _fallback: true
-//     };
-//   }
-// };
+// 4. Hàm QUAN TRỌNG: Lấy nội dung chương truyện (ĐÃ SỬA)
 const getChapterContent = async (chapterId) => {
-  console.log(`🔍 Đang tìm endpoint cho chương: ${chapterId}`);
+  console.log(`🔍 Đang tải chương ID: ${chapterId}`);
   
-  // THỬ CÁC ENDPOINT MỚI - API ĐÃ THAY ĐỔI
+  // PHÂN TÍCH chapterId: Có thể là ID đơn hoặc URL đầy đủ
+  let actualChapterId = chapterId;
+  
+  // Nếu chapterId chứa dấu ":" (ví dụ: "id:slug")
+  if (chapterId.includes(':')) {
+    actualChapterId = chapterId.split(':')[0];
+    console.log(`🔍 Phát hiện ID dạng "id:slug", dùng: ${actualChapterId}`);
+  }
+  
+  // THỬ CÁC ENDPOINT KHÁC NHAU
   const endpoints = [
-    // Endpoint mới có thể là:
-    `/api/chuong/${chapterId}`,
-    `/api/chapter/${chapterId}`,
-    `/api/truyen-tranh/chuong/${chapterId}`,
-    `/chapter/${chapterId}`,
-    `/truyen-tranh/${chapterId}`,
+    // Endpoint có thể đã thay đổi
+    `/chuong/${actualChapterId}`,
+    `/chapter/${actualChapterId}`,
+    `/api/chuong/${actualChapterId}`,
+    `/api/v1/chuong/${actualChapterId}`,
+    `/api/v1/chapter/${actualChapterId}`,
+    `/truyen-tranh/chuong/${actualChapterId}`,
     
-    // Hoặc endpoint khác với định dạng ID khác
-    // Thử cắt ID nếu có dạng "id:slug"
-    chapterId.includes(':') ? `/api/chuong/${chapterId.split(':')[0]}` : null
-  ].filter(Boolean); // Lọc bỏ null
-
+    // Thử với query parameter
+    `/chuong?id=${actualChapterId}`,
+    `/api/chuong?id=${actualChapterId}`,
+  ];
+  
   for (const endpoint of endpoints) {
     try {
       console.log(`🔄 Thử endpoint: ${endpoint}`);
-      const response = await otruyenClient.get(endpoint);
+      const data = await callOTruyenAPI(endpoint);
       
-      if (response.data) {
+      if (data) {
         console.log(`✅ Thành công với: ${endpoint}`);
-        return response.data.data || response.data;
+        return data.data || data;
       }
     } catch (error) {
-      // Chỉ log nếu không phải 404
       if (error.response?.status !== 404) {
-        console.log(`❌ Lỗi với ${endpoint}:`, error.message);
+        console.log(`⚠️ Lỗi với ${endpoint}: ${error.message}`);
       }
       continue;
     }
   }
   
-  // NẾU KHÔNG TÌM THẤY ENDPOINT, THỬ CÁCH KHÁC:
-  console.log('🔄 Thử phương án dự phòng...');
-  
-  // Cách 2: Dùng API tìm kiếm chương
+  // PHƯƠNG ÁN DỰ PHÒNG: Thử lấy từ HTML page
   try {
-    // Thử lấy thông tin chương từ API tìm kiếm
-    const searchResponse = await otruyenClient.get(`/tim-kiem?keyword=${chapterId}`);
-    if (searchResponse.data?.data?.length > 0) {
-      console.log('✅ Tìm thấy chương qua search API');
-      return searchResponse.data.data[0];
-    }
-  } catch (searchError) {
-    console.log('❌ Search API cũng lỗi:', searchError.message);
-  }
-  
-  // Cách 3: Thử proxy khác (tránh CORS)
-  try {
-    console.log('🔄 Thử dùng proxy...');
-    const proxyResponse = await axios.get(
-      `https://api.allorigins.win/get?url=${encodeURIComponent(
-        `https://otruyenapi.com/v1/api/chuong/${chapterId}`
-      )}`
-    );
+    console.log('🔄 Thử lấy từ trang HTML...');
+    const htmlUrl = `https://otruyenapi.com/truyen-tranh/chuong-${actualChapterId}`;
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(htmlUrl)}`;
     
-    if (proxyResponse.data?.contents) {
-      const data = JSON.parse(proxyResponse.data.contents);
-      console.log('✅ Thành công với proxy');
-      return data.data || data;
+    const response = await axios.get(proxyUrl, { timeout: 15000 });
+    
+    if (response.data?.contents) {
+      // Parse HTML để lấy nội dung
+      const htmlContent = response.data.contents;
+      
+      // Tìm nội dung chương trong HTML (điều chỉnh selector theo thực tế)
+      const chapterMatch = htmlContent.match(/<div[^>]*class=".*chapter-content.*"[^>]*>([\s\S]*?)<\/div>/i) ||
+                          htmlContent.match(/<div[^>]*id=".*chapter.*"[^>]*>([\s\S]*?)<\/div>/i) ||
+                          htmlContent.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
+      
+      if (chapterMatch) {
+        return {
+          chapter_name: `Chương ${actualChapterId}`,
+          chapter_content: chapterMatch[1],
+          comic_name: "Từ trang web",
+          _fromHtml: true
+        };
+      }
     }
-  } catch (proxyError) {
-    console.log('❌ Proxy cũng lỗi:', proxyError.message);
+  } catch (htmlError) {
+    console.log('❌ Không thể lấy từ HTML:', htmlError.message);
   }
   
-  // FALLBACK: Trả về dữ liệu mẫu để không bị lỗi UI
-  console.warn('🔥 Tất cả endpoints đều thất bại, dùng fallback data');
+  // FALLBACK CUỐI CÙNG
+  console.error(`🔥 Không thể tải chương ${chapterId}`);
+  
   return {
     chapter_name: `Chương ${chapterId}`,
     chapter_content: `
-      <div style="text-align: center; padding: 40px; font-family: Arial, sans-serif;">
-        <h3 style="color: #e74c3c;">⚠️ Không thể tải nội dung</h3>
-        <p>Chương truyện tạm thời không khả dụng. Nguyên nhân có thể:</p>
-        <ul style="text-align: left; display: inline-block; margin: 20px 0;">
-          <li>API đã thay đổi endpoint</li>
-          <li>Chương đã bị xóa hoặc di chuyển</li>
-          <li>Lỗi kết nối tạm thời</li>
-        </ul>
-        <p>Vui lòng thử lại sau hoặc đọc chương khác.</p>
-        <button onclick="window.history.back()" style="
-          background: #3498db;
-          color: white;
-          border: none;
-          padding: 10px 20px;
-          border-radius: 5px;
-          cursor: pointer;
-          margin-top: 20px;
-        ">← Quay lại</button>
+      <div style="text-align: center; padding: 50px 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+        <div style="font-size: 72px; margin-bottom: 20px; color: #e74c3c;">⚠️</div>
+        <h2 style="color: #2c3e50; margin-bottom: 20px;">Không thể tải nội dung chương</h2>
+        
+        <div style="
+          background: #f8f9fa;
+          border-radius: 10px;
+          padding: 25px;
+          margin: 30px auto;
+          max-width: 600px;
+          text-align: left;
+          border-left: 5px solid #3498db;
+        ">
+          <h4 style="color: #3498db; margin-top: 0;">Thông tin sự cố:</h4>
+          <p><strong>Mã chương:</strong> <code>${chapterId}</code></p>
+          <p><strong>Thời gian:</strong> ${new Date().toLocaleString('vi-VN')}</p>
+          <p><strong>Nguyên nhân:</strong> Endpoint API đã thay đổi hoặc không khả dụng</p>
+          <p><strong>Trạng thái:</strong> Đang khắc phục</p>
+        </div>
+        
+        <p style="color: #7f8c8d; margin-bottom: 30px; max-width: 500px; margin-left: auto; margin-right: auto;">
+          Chúng tôi đang nỗ lực khắc phục sự cố này. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.
+        </p>
+        
+        <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+          <button onclick="window.history.back()" style="
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(52, 152, 219, 0.2);
+            transition: all 0.3s ease;
+          " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(52, 152, 219, 0.3)';" 
+          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(52, 152, 219, 0.2)';">
+            ← Quay lại
+          </button>
+          
+          <button onclick="window.location.reload()" style="
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(46, 204, 113, 0.2);
+            transition: all 0.3s ease;
+          " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(46, 204, 113, 0.3)';" 
+          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(46, 204, 113, 0.2)';">
+            🔄 Thử lại
+          </button>
+          
+          <button onclick="window.location.href='/'" style="
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(155, 89, 182, 0.2);
+            transition: all 0.3s ease;
+          " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(155, 89, 182, 0.3)';" 
+          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(155, 89, 182, 0.2)';">
+            🏠 Về trang chủ
+          </button>
+        </div>
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; max-width: 500px; margin-left: auto; margin-right: auto;">
+          <h4 style="color: #2c3e50;">Cần hỗ trợ?</h4>
+          <p style="color: #7f8c8d; font-size: 14px;">
+            Nếu sự cố kéo dài, vui lòng liên hệ qua email: 
+            <a href="mailto:support@example.com" style="color: #3498db; text-decoration: none;">
+              support@example.com
+            </a>
+          </p>
+        </div>
       </div>
     `,
-    comic_name: "Truyện đang bảo trì",
+    comic_name: "Lỗi hệ thống",
     _fallback: true,
-    _error: `Endpoint /chuong/${chapterId} không còn hoạt động`
+    _error: "API_ENDPOINT_NOT_FOUND",
+    _timestamp: new Date().toISOString()
   };
 };
+
 const productService = {
   // Database cá nhân
   getAllProducts,
@@ -283,6 +388,5 @@ const productService = {
   // Utility
   isFallbackData: (data) => data?._fallback === true
 };
-
 
 export default productService;

@@ -12,62 +12,80 @@ const ProductDetail = () => {
   const [error, setError] = useState(null);
   const { addToCart } = useCart();
 
-  // Trong useEffect của ProductDetail
-useEffect(() => {
-  const fetchProductDetail = async () => {
-    try {
-      setLoading(true);
-      
-      const data = await productService.getOTruyenDetail(id);
-      
-      // Kiểm tra nếu là fallback data
-      if (productService.isFallbackData(data)) {
-        setError(data._error || 'Không thể tải chi tiết truyện');
-      }
-      
-      setProduct({
-        productId: data.slug || id,
-        productName: data.name || 'Đang tải...',
-        image: data.thumb_url 
-          ? `https://otruyenapi.com/uploads/comics/${data.thumb_url}`
-          : 'https://via.placeholder.com/300x450?text=Không+có+ảnh',
-        description: data.content || 'Chưa có mô tả',
-        category: { 
-          categoryName: data.category?.[0]?.name || 'Truyện tranh' 
-        },
-        price: 0,
-        quantity: 100,
-        chapters: data.chapters?.[0]?.server_data || []
-      });
-      
-    } catch (err) {
-      console.error('Lỗi fetch:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  fetchProductDetail();
-}, [id]);
+  useEffect(() => {
+    const fetchProductDetail = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const res = await productService.getOTruyenDetail(id);
+        
+        // Kiểm tra nếu là fallback data
+        if (productService.isFallbackData(res)) {
+          setError(res._error || "Không thể tải thông tin đầy đủ");
+        }
 
-  // Hàm trích xuất chapterId an toàn hơn
+        setProduct({
+          productId: res.slug || id,
+          productName: res.name || "Không có tên",
+          image: res.thumb_url 
+            ? `https://otruyenapi.com/uploads/comics/${res.thumb_url}`
+            : "https://via.placeholder.com/300x450?text=Không+có+ảnh",
+          description: res.content || "Đang cập nhật mô tả...",
+          category: { 
+            categoryName: res.category?.[0]?.name || "Truyện tranh" 
+          },
+          price: 0, 
+          quantity: 100,
+          chapters: res.chapters?.[0]?.server_data || [] 
+        });
+        
+      } catch (err) {
+        console.error("❌ Lỗi tải chi tiết:", err);
+        setError(err.message || "Không thể tải thông tin truyện");
+        
+        // Fallback để UI không bị lỗi
+        setProduct({
+          productId: id,
+          productName: "Lỗi tải truyện",
+          image: "https://via.placeholder.com/300x450?text=Lỗi+tải+truyện",
+          description: "Đã xảy ra lỗi khi tải thông tin truyện. Vui lòng thử lại sau.",
+          category: { categoryName: "Lỗi" },
+          price: 0,
+          quantity: 100,
+          chapters: []
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductDetail();
+  }, [id]);
+
+  // Hàm xử lý chapter API data
   const extractChapterId = (apiData) => {
-    if (!apiData) return null;
+    if (!apiData) return id;
     
     try {
-      // Kiểm tra nhiều định dạng URL
-      const urlParts = apiData.split('/');
-      const lastPart = urlParts.pop();
-      
-      // Nếu có dạng ID:slug, lấy phần ID
-      if (lastPart && lastPart.includes(':')) {
-        return lastPart.split(':')[0];
+      // Nếu là URL đầy đủ
+      if (apiData.startsWith('http')) {
+        const url = new URL(apiData);
+        const pathParts = url.pathname.split('/');
+        return pathParts.pop() || pathParts.pop();
       }
       
-      return lastPart || null;
-    } catch {
-      return null;
+      // Nếu là đường dẫn tương đối
+      if (apiData.startsWith('/')) {
+        const pathParts = apiData.split('/');
+        return pathParts.pop() || pathParts.pop();
+      }
+      
+      // Nếu đã là ID
+      return apiData;
+    } catch (error) {
+      console.error("❌ Lỗi extract chapter ID:", error);
+      return id;
     }
   };
 
@@ -82,7 +100,7 @@ useEffect(() => {
     );
   }
 
-  if (error || !product) {
+  if (!product) {
     return (
       <div className="container py-5">
         <button className="btn btn-light mb-4 border" onClick={() => navigate(-1)}>
@@ -91,12 +109,6 @@ useEffect(() => {
         <div className="alert alert-danger">
           <h4>Lỗi tải truyện</h4>
           <p>{error || "Không tìm thấy truyện này"}</p>
-          <button 
-            className="btn btn-outline-danger mt-2"
-            onClick={() => window.location.reload()}
-          >
-            Thử lại
-          </button>
         </div>
       </div>
     );
@@ -107,6 +119,13 @@ useEffect(() => {
       <button className="btn btn-light mb-4 border" onClick={() => navigate(-1)}>
         ← Quay lại
       </button>
+
+      {error && (
+        <div className="alert alert-warning alert-dismissible fade show" role="alert">
+          <strong>Lưu ý:</strong> {error}
+          <button type="button" className="btn-close" onClick={() => setError(null)}></button>
+        </div>
+      )}
 
       <div className="row bg-white p-4 rounded-4 shadow-lg">
         <div className="col-md-5 mb-4">
@@ -130,7 +149,11 @@ useEffect(() => {
             </span>
             <span className="badge bg-success">Miễn phí</span>
           </div>
-
+          
+          <div className="price-section mb-4">
+            <h3 className="text-success fw-bold">Miễn phí đọc</h3>
+          </div>
+          
           <div className="border-top pt-3 mb-4">
             <h5 className="fw-bold mb-2">Giới thiệu:</h5>
             <div 
@@ -142,14 +165,13 @@ useEffect(() => {
           </div>
 
           {/* Danh sách chương */}
-          <div className="chapters-list mt-4" 
-               style={{ 
-                 maxHeight: "300px", 
-                 overflowY: "auto", 
-                 border: "1px solid #eee", 
-                 padding: "15px",
-                 borderRadius: "8px"
-               }}>
+          <div className="chapters-list mt-4" style={{ 
+            maxHeight: "300px", 
+            overflowY: "auto", 
+            border: "1px solid #eee", 
+            padding: "15px",
+            borderRadius: "8px"
+          }}>
             <h6 className="fw-bold mb-3">📖 Danh sách chương:</h6>
             
             {product.chapters.length > 0 ? (
@@ -157,15 +179,6 @@ useEffect(() => {
                 {product.chapters.map((chap, index) => {
                   const chapterId = extractChapterId(chap.chapter_api_data);
                   
-                  if (!chapterId) {
-                    return (
-                      <div key={index} className="list-group-item text-muted">
-                        <span>Chương {chap.chapter_name}</span>
-                        <small className="ms-2">(Đang cập nhật)</small>
-                      </div>
-                    );
-                  }
-
                   return (
                     <Link 
                       key={index} 
@@ -175,6 +188,7 @@ useEffect(() => {
                         comicName: product.productName
                       }}
                       className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                      onClick={() => console.log('📚 Chọn chương:', chap)}
                     >
                       <div>
                         <span className="fw-medium">Chương {chap.chapter_name}</span>
@@ -213,7 +227,6 @@ useEffect(() => {
             <button 
               className="btn btn-outline-secondary px-4"
               onClick={() => {
-                // Chia sẻ truyện
                 navigator.clipboard.writeText(window.location.href);
                 alert("Đã sao chép link truyện!");
               }}
