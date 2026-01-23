@@ -97,10 +97,10 @@ const getCategories = async (pageNumber = 0, pageSize = 1000) => {
 const otruyenClient = axios.create({
   baseURL: OTRUYEN_API,
   timeout: 10000,
-  headers: {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    "Accept": "application/json"
-  }
+  // headers: {
+  //   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+  //   "Accept": "application/json"
+  // }
 });
 
 const getOTruyenList = async (page = 1) => {
