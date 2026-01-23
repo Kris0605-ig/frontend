@@ -3,19 +3,22 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import productService from "../../services/productService";
 
 const ProductDetail = () => {
-  const { id } = useParams(); // Nhận slug truyện
+  const { id } = useParams(); // 'id' ở đây chính là slug của truyện
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
 
   useEffect(() => {
     productService.getOTruyenDetail(id)
       .then((res) => {
-        setProduct({
-          name: res.name,
-          image: `https://otruyenapi.com/uploads/comics/${res.thumb_url}`,
-          description: res.content,
-          chapters: res.chapters?.[0]?.server_data || []
-        });
+        if (res) {
+          setProduct({
+            slug: res.slug,
+            name: res.name,
+            image: `https://otruyenapi.com/uploads/comics/${res.thumb_url}`,
+            description: res.content,
+            chapters: res.chapters?.[0]?.server_data || []
+          });
+        }
       })
       .catch((err) => console.error("Lỗi tải truyện:", err));
   }, [id]);
@@ -33,10 +36,11 @@ const ProductDetail = () => {
             <h6 className="fw-bold">Danh sách chương:</h6>
             <div className="list-group">
               {product.chapters.map((chap, index) => {
-                // TRÍCH XUẤT ID CHƯƠNG CHUẨN
-                const chapterId = chap.chapter_api_data.split('/').filter(Boolean).pop();
+                // SỬA TẠI ĐÂY: Truyền slug, chapter và các thông tin khác qua URL
+                const readingUrl = `/reading?slug=${product.slug}&chapter=${chap.chapter_name}&title=${encodeURIComponent(product.name)}&cover=${encodeURIComponent(product.image)}`;
+                
                 return (
-                  <Link key={index} to={`/reading/${chapterId}`} className="list-group-item list-group-item-action">
+                  <Link key={index} to={readingUrl} className="list-group-item list-group-item-action">
                     Chương {chap.chapter_name}
                   </Link>
                 );
