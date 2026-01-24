@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import productService from "services/productService";
+// ĐÚNG (đi ra 2 cấp thư mục để vào lại services)
+import productService from '../../services/productService';
 
 const ReadingPage = () => {
   const navigate = useNavigate();
