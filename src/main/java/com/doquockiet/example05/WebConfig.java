@@ -10,7 +10,7 @@ public class WebConfig implements WebMvcConfigurer {
 public void addCorsMappings(CorsRegistry registry) {
     registry.addMapping("/**")
             .allowedOrigins(
-                "https://doquockiet-comic.netlify.app", // Tên miền mới của bạn
+                "https://doquockiet-comic.netlify.app",
                 "http://localhost:5173"               // Cho phép chạy ở máy local
             )
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
