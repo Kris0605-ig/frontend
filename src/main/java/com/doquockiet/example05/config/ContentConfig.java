@@ -2,6 +2,7 @@ package com.doquockiet.example05.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -10,7 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class ContentConfig implements WebMvcConfigurer {
 
     @Override
-    public void configureContentNegotiation(@SuppressWarnings("null") ContentNegotiationConfigurer configurer) {
+    public void configureContentNegotiation(@NonNull ContentNegotiationConfigurer configurer) {
         configurer.favorParameter(true)
                 .parameterName("mediaType")
                 .defaultContentType(MediaType.APPLICATION_JSON)
@@ -18,10 +19,10 @@ public class ContentConfig implements WebMvcConfigurer {
                 .mediaType("xml", MediaType.APPLICATION_XML);
     }
 
-    // ✅ Thêm phần này để hiển thị ảnh trong thư mục /images/
+    // Cấu hình để xem ảnh trực tiếp qua URL (ví dụ: localhost:8080/images/manga.jpg)
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:images/"); // đường dẫn tới thư mục chứa ảnh ở gốc project
+                .addResourceLocations("file:images/"); 
     }
 }

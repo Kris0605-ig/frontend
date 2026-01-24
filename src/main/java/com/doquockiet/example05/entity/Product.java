@@ -1,19 +1,9 @@
 package com.doquockiet.example05.entity;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,33 +15,36 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Product {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long productId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long productId;
 
-	@NotBlank
-	@Size(min = 3, message = "Product name must contain atleast 3 characters")
-	private String productName;
+    @NotBlank
+    private String productName;
 
-	private String image;
+    @Column(unique = true)
+    private String slug; // Định danh truyện từ OTruyen
 
-	@NotBlank
-	@Size(min = 6, message = "Product description must contain atleast 6 characters")
-	private String description;
+    private String thumbUrl; // Link ảnh từ server OTruyen
 
-	private Integer quantity;
-	private double price;
-	private double discount;
-	private double specialPrice;
+    private String status; // Trạng thái truyện
 
-	@ManyToOne
-	@JoinColumn(name = "category_id")
-	private Category category;
+@Lob
+@Column(columnDefinition = "LONGTEXT")
+private String description;
 
-	@OneToMany(mappedBy = "product", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.EAGER)
-	private List<CartItem> products = new ArrayList<>();
+    private Integer quantity = 0;
+    private double price = 0;
+    private double discount = 0;
+    private double specialPrice = 0;
 
-	@OneToMany(mappedBy = "product", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-	private List<OrderItem> orderItems = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 
+    @OneToMany(mappedBy = "product", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    private List<CartItem> cartItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    private List<OrderItem> orderItems = new ArrayList<>();
 }
