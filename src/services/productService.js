@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import productService from "../../services/productService";
+// Bỏ dấu ../.., bắt đầu thẳng từ services
+import productService from 'services/productService';
 
 const ProductDetail = () => {
   const { id } = useParams(); // 'id' là slug truyện từ URL

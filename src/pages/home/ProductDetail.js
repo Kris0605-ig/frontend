@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import productService from '../../services/productService';// Giữ nguyên hoặc kiểm tra lại nếu folder home nằm trong folder pages
+// Thay vì ../../, bạn gọi trực tiếp từ src
+import productService from "services/productService";// Giữ nguyên hoặc kiểm tra lại nếu folder home nằm trong folder pages
 
 const ProductDetail = () => {
   const { id } = useParams(); // 'id' ở đây chính là slug của truyện
